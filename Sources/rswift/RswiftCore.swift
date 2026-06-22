@@ -287,6 +287,8 @@ public struct RswiftCore {
             validate
         }
 
+        s.markNonisolated()
+
         if accessLevel == .publicLevel {
             s.setAccessControl(.public)
 
@@ -303,11 +305,11 @@ public struct RswiftCore {
         let mainLet: String
         switch bundleSource {
         case .module:
-            mainLet = "\(accessLevel == .publicLevel ? "public " : "")let R = _R(bundle: Bundle.module)"
+            mainLet = "\(accessLevel == .publicLevel ? "public " : "")nonisolated let R = _R(bundle: Bundle.module)"
         case .finder:
             mainLet = """
             private class BundleFinder {}
-            \(accessLevel == .publicLevel ? "public " : "")let R = _R(bundle: Bundle(for: BundleFinder.self))
+            \(accessLevel == .publicLevel ? "public " : "")nonisolated let R = _R(bundle: Bundle(for: BundleFinder.self))
             """
         }
 

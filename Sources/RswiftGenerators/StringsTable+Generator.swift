@@ -13,6 +13,7 @@ extension Struct {
     public func generateBundleVarGetterForString() -> VarGetter {
         VarGetter(
             deploymentTarget: deploymentTarget,
+            isNonisolated: true,
             name: name,
             typeReference: TypeReference(module: .host, rawName: name.value),
             valueCodeString: ".init(bundle: bundle, preferredLanguages: nil, locale: nil)"
@@ -23,6 +24,7 @@ extension Struct {
         Function(
             comments: [],
             deploymentTarget: deploymentTarget,
+            isNonisolated: true,
             name: SwiftIdentifier(name: name),
             params: [.init(name: "bundle", localName: nil, typeReference: .bundle, defaultValue: nil)],
             returnType: TypeReference(module: .host, rawName: self.name.value),
@@ -34,6 +36,7 @@ extension Struct {
         Function(
             comments: [],
             deploymentTarget: deploymentTarget,
+            isNonisolated: true,
             name: SwiftIdentifier(name: name),
             params: [.init(name: "locale", localName: nil, typeReference: .locale, defaultValue: nil)],
             returnType: TypeReference(module: .host, rawName: self.name.value),
@@ -45,6 +48,7 @@ extension Struct {
         Function(
             comments: [],
             deploymentTarget: deploymentTarget,
+            isNonisolated: true,
             name: SwiftIdentifier(name: name),
             params: [
                 .init(name: "preferredLanguages", localName: nil, typeReference: .init(module: .stdLib, rawName: "[String]"), defaultValue: nil),
@@ -145,6 +149,7 @@ extension StringsTable {
 
     public static func generateBundleLocaleVarGetter(name: SwiftIdentifier, tableName: String) -> VarGetter {
         VarGetter(
+            isNonisolated: true,
             name: name,
             typeReference: TypeReference(module: .host, rawName: name.value),
             valueCodeString: #".init(source: .init(bundle: bundle, tableName: "\#(tableName.escapedStringLiteral)", preferredLanguages: preferredLanguages, locale: locale))"#
@@ -154,6 +159,7 @@ extension StringsTable {
     public static func generateBundleLocaleFunction(name: SwiftIdentifier) -> Function {
         Function(
             comments: [],
+            isNonisolated: true,
             name: name,
             params: [
                 .init(name: "bundle", localName: nil, typeReference: .bundle, defaultValue: nil),
@@ -167,6 +173,7 @@ extension StringsTable {
     public static func generatePreferredLanguagesFunction(name: SwiftIdentifier, tableName: String) -> Function {
         Function(
             comments: [],
+            isNonisolated: true,
             name: name,
             params: [
                 .init(name: "preferredLanguages", localName: nil, typeReference: TypeReference(module: .stdLib, rawName: "[String]"), defaultValue: nil),
@@ -334,6 +341,7 @@ private struct StringWithParams {
         let arguments = parameters.map { $0.localName ?? $0.name }.joined(separator: ", ")
         return Function(
             comments: self.comments,
+            isNonisolated: true,
             name: SwiftIdentifier(name: key),
             params: parameters,
             returnType: .string,
@@ -350,6 +358,7 @@ private struct StringWithParams {
         return Function(
             comments: self.comments,
             deprecated: "Use R.string(preferredLanguages:).*.* instead",
+            isNonisolated: true,
             name: SwiftIdentifier(name: key),
             params: parameters + [languages],
             returnType: .string,
@@ -367,6 +376,7 @@ private struct StringWithParams {
 
         return VarGetter(
             comments: self.comments,
+            isNonisolated: true,
             name: SwiftIdentifier(name: key),
             typeReference: typeReference,
             valueCodeString: varValueCodeString

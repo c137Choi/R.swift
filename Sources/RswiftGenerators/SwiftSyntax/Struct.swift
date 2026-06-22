@@ -94,6 +94,7 @@ public struct VarGetter: Sendable {
     public let comments: [String]
     public let deploymentTarget: DeploymentTarget?
     public var accessControl = AccessControl.none
+    public var isNonisolated = false
     public let name: SwiftIdentifier
     public let typeReference: TypeReference
     public let valueCodeString: String
@@ -102,6 +103,7 @@ public struct VarGetter: Sendable {
         comments: [String] = [],
         deploymentTarget: DeploymentTarget? = nil,
         accessControl: AccessControl = AccessControl.none,
+        isNonisolated: Bool = false,
         name: SwiftIdentifier,
         typeReference: TypeReference,
         valueCodeString: String
@@ -109,6 +111,7 @@ public struct VarGetter: Sendable {
         self.comments = comments
         self.deploymentTarget = deploymentTarget
         self.accessControl = accessControl
+        self.isNonisolated = isNonisolated
         self.name = name
         self.typeReference = typeReference
         self.valueCodeString = valueCodeString
@@ -127,6 +130,7 @@ public struct VarGetter: Sendable {
 
         let words: [String?] = [
             accessControl.code(),
+            isNonisolated ? "nonisolated" : nil,
             "var",
             "\(name.value):",
             typeReference.codeString(),
@@ -145,6 +149,7 @@ public struct Function: Sendable {
     public let deploymentTarget: DeploymentTarget?
     public var deprecated: String?
     public var accessControl = AccessControl.none
+    public var isNonisolated = false
     public let isStatic: Bool
     public let name: SwiftIdentifier
     public let params: [Parameter]
@@ -157,6 +162,7 @@ public struct Function: Sendable {
         deploymentTarget: DeploymentTarget? = nil,
         deprecated: String? = nil,
         accessControl: AccessControl = AccessControl.none,
+        isNonisolated: Bool = false,
         isStatic: Bool = false,
         name: SwiftIdentifier,
         params: [Parameter],
@@ -168,6 +174,7 @@ public struct Function: Sendable {
         self.deploymentTarget = deploymentTarget
         self.deprecated = deprecated
         self.accessControl = accessControl
+        self.isNonisolated = isNonisolated
         self.isStatic = isStatic
         self.name = name
         self.params = params
@@ -221,6 +228,7 @@ public struct Function: Sendable {
         let prs = params.map { $0.codeString() }.joined(separator: ", ")
         let words: [String?] = [
             accessControl.code(),
+            isNonisolated ? "nonisolated" : nil,
             isStatic ? "static" : nil,
             "func",
             "\(name.value)(\(prs))",
@@ -369,6 +377,7 @@ public struct Struct: Sendable {
     public let comments: [String]
     public let deploymentTarget: DeploymentTarget?
     public var accessControl = AccessControl.none
+    public var isNonisolated = false
     public let name: SwiftIdentifier
     public var protocols: [TypeReference] = []
     public var lets: [LetBinding] = []
@@ -385,6 +394,7 @@ public struct Struct: Sendable {
         comments: [String] = [],
         deploymentTarget: DeploymentTarget? = nil,
         accessControl: AccessControl = AccessControl.none,
+        isNonisolated: Bool = false,
         name: SwiftIdentifier,
         protocols: [TypeReference] = [],
         additionalModuleReferences: Set<ModuleReference> = [],
@@ -393,6 +403,7 @@ public struct Struct: Sendable {
         self.comments = comments
         self.deploymentTarget = deploymentTarget
         self.accessControl = accessControl
+        self.isNonisolated = isNonisolated
         self.name = name
         self.protocols = protocols
         self.additionalModuleReferences = additionalModuleReferences
@@ -454,6 +465,14 @@ public struct Struct: Sendable {
         }
     }
 
+    public mutating func markNonisolated() {
+        self.isNonisolated = true
+
+        for i in structs.indices {
+            structs[i].markNonisolated()
+        }
+    }
+
     public func prettyPrint() -> String {
         var pp = PrettyPrinter()
         render(&pp)
@@ -469,7 +488,7 @@ public struct Struct: Sendable {
 
         let ps = protocols.map { $0.codeString() }.joined(separator: ", ")
         let implements = ps.isEmpty ? "" : ": \(ps)"
-        pp.append(words: [accessControl.code(), "struct", "\(name.value)\(implements)", "{"])
+        pp.append(words: [accessControl.code(), isNonisolated ? "nonisolated" : nil, "struct", "\(name.value)\(implements)", "{"])
 
         pp.indented { pp in
             for talias in typealiasses {
